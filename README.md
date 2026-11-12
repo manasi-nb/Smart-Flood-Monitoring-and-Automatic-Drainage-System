@@ -106,14 +106,13 @@ If Arduino IDE requires a sketch folder, put each `.ino` file in a same-named fo
 
 1. **Create ThingSpeak channels:** Channel 1 for monitoring and Channel 2 for pump control. Create MQTT credentials and authorize access to both channels.
 2. **Configure `gateway.ino`:** Set `STA_SSID`, `STA_PASS`, `MQTT_CLIENT_ID`, `MQTT_USERNAME`, `MQTT_PASSWORD`, `CHANNEL_ID` and `CONTROL_CHANNEL_ID`. The broker is `mqtt3.thingspeak.com`, TCP port **1883** (unencrypted, as in the prototype).
-3. **Configure local Wi-Fi:** The supplied sketches use SSID `FloodGateway` and password `Flood12345`. Change this default password in all three sketches before public deployment.
+3. **Configure local Wi-Fi:** The supplied sketches use SSID `FloodGateway` and password `Flood12345`. 
 4. **Check calibration:** Node A uses `SENSOR_HEIGHT_CM = 10.5` (the actual sensor-reference-to-bottom distance). Node B uses `DRY_ADC = 2500` and `WET_ADC = 2200` in the supplied code; measure and replace these values for your soil/probe.
 5. **Check hardware settings:** Node B has `RELAY_ACTIVE_LOW = true` and `ENABLE_PHYSICAL_RELAY = true`. Confirm these match the verified relay interface. For initial testing, disconnect the motor or set physical relay control disabled.
 6. **Upload firmware:** Flash `gateway.ino` to Gateway C, `node_a.ino` to Node A, and `node_b.ino` to Node B. Open Serial Monitor at **115200 baud** if debugging.
 7. **Connect and verify:** Gateway C should expose `FloodGateway` at `192.168.4.1`. Node B uses static IP `192.168.4.20`; Node A obtains an address by DHCP. Confirm both report `HTTP: 200`.
 8. **Open dashboard:** Connect a phone/laptop to `FloodGateway`, then visit **http://192.168.4.1/**. Verify sensor readings and node status before testing the pump.
 
-**Never commit real Wi-Fi passwords, MQTT credentials, or ThingSpeak API keys to a public repository.** Use placeholders in the committed sketches and set private credentials locally. Rotate any credentials that were previously exposed.
 
 ## Flood thresholds and pump behavior
 

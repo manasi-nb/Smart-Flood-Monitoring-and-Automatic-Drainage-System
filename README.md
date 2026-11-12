@@ -1,6 +1,6 @@
 # Smart Flood Monitoring and Automatic Drainage System
 
-**EE4216 Mini-Project — Bidirectional IoT Network**
+**EE4216 Mini-Project - Bidirectional IoT Network**
 
 A three-ESP32-S3 prototype that monitors water depth and soil moisture, displays flood warnings, and controls a miniature drainage pump. Two local sensor nodes communicate with an ESP32-S3 gateway using **HTTP**. The gateway provides a live local dashboard and uses **MQTT** to publish measurements to ThingSpeak, receive remote pump commands, and publish execution feedback.
 

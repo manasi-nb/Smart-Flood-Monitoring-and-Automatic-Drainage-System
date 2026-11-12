@@ -46,7 +46,7 @@ Gateway C performs **application-layer forwarding**. The local sensor nodes do n
 | ESP32-S3-DevKitC-1 (ESP32-S3-WROOM-2) | 3 | Nodes A, B and gateway C |
 | HC-SR04 ultrasonic sensor | 1 | Water-level measurement |
 | Capacitive soil moisture sensor | 1 | Ground wetness measurement |
-| WS2812/NeoPixel RGB LED strip (8 LEDs) | 1 | Local flood warnings |
+| NeoPixel RGB LED strip (8 LEDs) | 1 | Local flood warnings |
 | CW-021 two-channel 5 V relay module | 1 | Pump switching (one channel used) |
 | DC 3–5 V micro-submersible pump | 1 | Drainage |
 | Water containers | 2 | Flood basin and collection reservoir |
@@ -243,5 +243,3 @@ A successful ThingSpeak write means the cloud stored the command, **not** that t
 - Node B pump status: http://192.168.4.20/api/pump
 - Node B health: http://192.168.4.20/api/health
 - ThingSpeak: https://thingspeak.com/
-Add your team member names, group number, contribution summary, and chosen license before publishing. No license is implied by this repository unless you add one.
-

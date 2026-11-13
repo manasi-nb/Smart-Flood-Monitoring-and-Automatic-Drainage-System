@@ -12,7 +12,7 @@ A three-ESP32-S3 prototype that monitors water depth and soil moisture, displays
 - **Manual control:** Local dashboard or ThingSpeak commands can start/stop the pump, select automatic mode, or reset it.
 - **Local monitoring:** Gateway-hosted dashboard refreshes with JavaScript `fetch()` every 2 seconds, showing readings, connectivity, risk, and pump status.
 - **Cloud integration:** MQTT telemetry, remote control, and best-effort execution feedback through two ThingSpeak channels.
-- **Basic fault handling:** Sensor freshness checks, reconnect attempts, a Node B communication watchdog, and a manual pump runtime limit.
+- **Basic fault handling:** Sensor freshness checks, reconnect attempts, a Node B communication timeout mechanism, and a manual pump runtime limit.
 
 ## Architecture
 
@@ -128,7 +128,7 @@ Water depth is calculated as `SENSOR_HEIGHT_CM - measured_distance_cm`.
 |---|---|
 | MANUAL | Manual ON/OFF; 20-second maximum continuous manual run |
 | AUTO | Start at **8 cm** when armed; stop at **4 cm**; no 20-second automatic timeout |
-| Both | Local safety checks and Node B's 8-second gateway-communication watchdog remain active |
+| Both | Local safety checks and Node B's 8-second gateway-communication timeout mechanism remain active |
 
 The 8 cm ON / 4 cm OFF thresholds create **hysteresis**, reducing rapid relay switching. The gateway tracks node freshness with a 10-second timeout. The moisture percentage is supplementary monitoring; it is not an automatic pump trigger.
 

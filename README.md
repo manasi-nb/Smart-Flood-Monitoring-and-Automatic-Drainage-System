@@ -77,7 +77,7 @@ Gateway C performs **application-layer forwarding**. The local sensor nodes do n
 | GPIO 7 | Relay IN1 |
 | Verified 5 V and GND | Relay power (per module configuration) |
 
-**Pump switching:** Verified pump-supply positive → relay Channel 1 **COM**; relay Channel 1 **NO** → pump positive; pump negative → pump-supply negative. NC is unused. A shared ground may be needed for the chosen relay driver. Confirm the CW-021 terminal labels on the actual board. Do not route unverified pump current through an ESP32 power pin.
+**Pump switching:** Verified 5 V supply → relay Channel 1 **COM**; relay Channel 1 **NO** → pump positive; pump negative → **GND**. NC is unused. A shared ground may be needed for the chosen relay driver. Confirm the CW-021 terminal labels on the actual board. Do not route unverified pump current through an ESP32 power pin.
 
 ### Gateway C
 

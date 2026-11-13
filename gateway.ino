@@ -36,11 +36,9 @@ WebServer server(80);
 WiFiClient wifiClient;
 PubSubClient mqtt(wifiClient);
 
-const char* NODE_B_URL =
-  "http://192.168.4.20/api/pump";
+const char* NODE_B_URL = "http://192.168.4.20/api/pump";
 
-const char* NODE_B_RESET_URL =
-  "http://192.168.4.20/api/pump/reset";
+const char* NODE_B_RESET_URL = "http://192.168.4.20/api/pump/reset";
 
 String publishTopic;
 String subscribeTopic;
@@ -73,10 +71,7 @@ const float STOP_LEVEL = 4.0;
 // 4. PUMP STATE
 // ==========================================
 
-enum ControlMode {
-  MANUAL,
-  AUTOMATIC
-};
+enum ControlMode {MANUAL, AUTOMATIC};
 
 ControlMode mode = MANUAL;
 
@@ -164,26 +159,18 @@ String modeName() {
 }
 
 String newCommandID() {
-  return "gw-" + String(bootID, HEX) +
-    "-" + String(++commandCounter);
+  return "gw-" + String(bootID, HEX) + "-" + String(++commandCounter);
 }
 
 bool safeToStart() {
-  return nodeAOnline() &&
-         nodeBOnline() &&
-         pumpKnown &&
-         waterDepth > STOP_LEVEL;
+  return nodeAOnline() && nodeBOnline() && pumpKnown && waterDepth > STOP_LEVEL;
 }
 
 void sendJSON(int status, JsonDocument& doc) {
   String output;
   serializeJson(doc, output);
 
-  server.send(
-    status,
-    "application/json",
-    output
-  );
+  server.send(status, "application/json", output);
 }
 
 void markFeedback(bool success) {
@@ -224,10 +211,7 @@ bool setPump(bool requested) {
   http.begin(NODE_B_URL);
   http.setTimeout(1200);
 
-  http.addHeader(
-    "Content-Type",
-    "application/json"
-  );
+  http.addHeader("Content-Type", "application/json");
 
   int code = http.POST(payload);
   String response = http.getString();
@@ -236,8 +220,7 @@ bool setPump(bool requested) {
 
   JsonDocument ack;
 
-  bool valid =
-    code == 200 &&
+  bool valid = code == 200 && 
     deserializeJson(ack, response) ==
       DeserializationError::Ok &&
     ack["success"].is<bool>() &&
@@ -301,11 +284,7 @@ void pollPump() {
 
   JsonDocument doc;
 
-  if (code != 200 ||
-      deserializeJson(doc, response) ||
-      !doc["pump_on"].is<bool>() ||
-      !doc["simulation"].is<bool>() ||
-      !doc["simulation"].as<bool>()) {
+  if (code != 200 || deserializeJson(doc, response) || !doc["pump_on"].is<bool>() || !doc["simulation"].is<bool>() || !doc["simulation"].as<bool>()) {
 
     if (pumpKnown) {
       pumpKnown = false;
@@ -348,10 +327,7 @@ bool resetSimulation() {
   http.begin(NODE_B_RESET_URL);
   http.setTimeout(2000);
 
-  http.addHeader(
-    "Content-Type",
-    "application/json"
-  );
+  http.addHeader("Content-Type", "application/json");
 
   int code = http.POST("{}");
   String response = http.getString();
@@ -441,9 +417,7 @@ bool applyControl(int command) {
 
     case 2: { // AUTOMATIC
 
-      if (!nodeAOnline() ||
-          !nodeBOnline() ||
-          !pumpKnown) {
+      if (!nodeAOnline() || !nodeBOnline() || !pumpKnown) {
 
         pumpResult = "SENSORS_NOT_READY";
         return false;
@@ -487,10 +461,7 @@ void automaticControl() {
   lastAutoAction = millis();
 
   // Safety stop in both modes
-  if (pumpKnown && pumpOn &&
-      (!nodeAOnline() ||
-       !nodeBOnline() ||
-       waterDepth <= STOP_LEVEL)) {
+  if (pumpKnown && pumpOn && (!nodeAOnline() || !nodeBOnline() || waterDepth <= STOP_LEVEL)) {
 
     if (nodeBOnline()) {
       bool ok = setPump(false);
@@ -504,23 +475,17 @@ void automaticControl() {
     return;
 
   // Rearm only when water is low
-  if (nodeAOnline() &&
-      waterDepth <= STOP_LEVEL) {
+  if (nodeAOnline() && waterDepth <= STOP_LEVEL) {
 
     autoArmed = true;
   }
 
-  if (!pumpKnown ||
-      !nodeAOnline() ||
-      !nodeBOnline()) {
+  if (!pumpKnown || !nodeAOnline() || !nodeBOnline()) {
 
     return;
   }
 
-  if (!pumpOn &&
-      autoArmed &&
-      waterDepth >= CRITICAL_LEVEL &&
-      safeToStart()) {
+  if (!pumpOn && autoArmed && waterDepth >= CRITICAL_LEVEL && safeToStart()) {
 
     autoArmed = false;
 
@@ -539,30 +504,23 @@ void receiveWater() {
 
   JsonDocument doc;
 
-  if (deserializeJson(doc, server.arg("plain")) ||
-      (!doc["water_depth_cm"].is<float>() &&
-       !doc["water_depth_cm"].is<int>())) {
+  if (deserializeJson(doc, server.arg("plain")) || (!doc["water_depth_cm"].is<float>() && !doc["water_depth_cm"].is<int>())) {
 
-    server.send(400, "application/json",
-      "{\"error\":\"Invalid water reading\"}");
+    server.send(400, "application/json", "{\"error\":\"Invalid water reading\"}");
 
     return;
   }
   
   if (doc["node_id"].as<String>() != "node_a") {
-  server.send(400, "application/json",
-    "{\"error\":\"Invalid node ID\"}");
+  server.send(400, "application/json", "{\"error\":\"Invalid node ID\"}");
   return;
   }
 
   float value = doc["water_depth_cm"].as<float>();
 
-  if (!isfinite(value) ||
-      value < 0 ||
-      value > 100) {
+  if (!isfinite(value) || value < 0 || value > 100) {
 
-    server.send(400, "application/json",
-      "{\"error\":\"Out of range\"}");
+    server.send(400, "application/json", "{\"error\":\"Out of range\"}");
 
     return;
   }
@@ -571,8 +529,7 @@ void receiveWater() {
   waterReceived = true;
   lastWater = millis();
 
-  server.send(200, "application/json",
-    "{\"status\":\"received\"}");
+  server.send(200, "application/json", "{\"status\":\"received\"}");
 }
 
 // ==========================================
@@ -583,18 +540,15 @@ void receiveMoisture() {
 
   JsonDocument doc;
 
-  if (deserializeJson(doc, server.arg("plain")) ||
-      !doc["moisture_raw"].is<int>()) {
+  if (deserializeJson(doc, server.arg("plain")) || !doc["moisture_raw"].is<int>()) {
 
-    server.send(400, "application/json",
-      "{\"error\":\"Invalid moisture reading\"}");
+    server.send(400, "application/json", "{\"error\":\"Invalid moisture reading\"}");
 
     return;
   }
 
   if (doc["node_id"].as<String>() != "node_b") {
-  server.send(400, "application/json",
-    "{\"error\":\"Invalid node ID\"}");
+  server.send(400, "application/json", "{\"error\":\"Invalid node ID\"}");
   return;
 }
 
@@ -602,8 +556,7 @@ void receiveMoisture() {
 
   if (raw < 0 || raw > 4095) {
 
-    server.send(400, "application/json",
-      "{\"error\":\"Out of range\"}");
+    server.send(400, "application/json", "{\"error\":\"Out of range\"}");
 
     return;
   }
@@ -613,13 +566,9 @@ void receiveMoisture() {
   // New calibrated fields, if supplied by Node B
   if (doc["moisture_pct"].is<int>()) {
 
-    moisturePercent = constrain(
-      doc["moisture_pct"].as<int>(),
-      0, 100
-    );
+    moisturePercent = constrain(doc["moisture_pct"].as<int>(), 0, 100);
 
-    groundCondition =
-      doc["ground_condition"] | "UNKNOWN";
+    groundCondition = doc["ground_condition"] | "UNKNOWN";
   } else {
     groundCondition = "UNKNOWN";
   }
@@ -627,8 +576,7 @@ void receiveMoisture() {
   moistureReceived = true;
   lastMoisture = millis();
 
-  server.send(200, "application/json",
-    "{\"status\":\"received\"}");
+  server.send(200, "application/json", "{\"status\":\"received\"}");
 }
 
 // ==========================================
@@ -651,13 +599,9 @@ void getStatus() {
   doc["node_a_online"] = nodeAOnline();
   doc["node_b_online"] = nodeBOnline();
 
-  doc["water_age_s"] =
-    waterReceived ?
-    (millis() - lastWater) / 1000 : 0;
+  doc["water_age_s"] = waterReceived ? (millis() - lastWater) / 1000 : 0;
 
-  doc["moisture_age_s"] =
-    moistureReceived ?
-    (millis() - lastMoisture) / 1000 : 0;
+  doc["moisture_age_s"] = moistureReceived ? (millis() - lastMoisture) / 1000 : 0;
 
   doc["flood_risk"] = getRisk();
 
@@ -671,8 +615,7 @@ void getStatus() {
   // Legacy protocol flag; relay is physical
   doc["pump_simulation"] = true;
 
-  doc["internet_connected"] =
-    WiFi.status() == WL_CONNECTED;
+  doc["internet_connected"] = WiFi.status() == WL_CONNECTED;
 
   doc["mqtt_connected"] = mqtt.connected();
 
@@ -689,11 +632,9 @@ void handleLocalControl() {
 
   JsonDocument doc;
 
-  if (deserializeJson(doc, server.arg("plain")) ||
-      !doc["command"].is<int>()) {
+  if (deserializeJson(doc, server.arg("plain")) || !doc["command"].is<int>()) {
 
-    server.send(400, "application/json",
-      "{\"success\":false,\"message\":\"INVALID_JSON\"}");
+    server.send(400, "application/json", "{\"success\":false,\"message\":\"INVALID_JSON\"}");
 
     return;
   }
@@ -1033,11 +974,7 @@ setInterval(updateDashboard,2000);
 // 18. MQTT CALLBACK
 // ==========================================
 
-void mqttCallback(
-  char* topic,
-  byte* payload,
-  unsigned int length
-) {
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
   if (String(topic) != subscribeTopic)
     return;
@@ -1068,19 +1005,14 @@ void mqttCallback(
 
 void connectMQTT() {
 
-  if (mqtt.connected() ||
-      WiFi.status() != WL_CONNECTED)
+  if (mqtt.connected() || WiFi.status() != WL_CONNECTED)
     return;
 
-  if (mqtt.connect(
-      MQTT_CLIENT_ID,
-      MQTT_USERNAME,
-      MQTT_PASSWORD)) {
+  if (mqtt.connect(MQTT_CLIENT_ID, MQTT_USERNAME, MQTT_PASSWORD)) {
 
     Serial.println("MQTT CONNECTED");
 
-    if (mqtt.subscribe(
-      subscribeTopic.c_str())) {
+    if (mqtt.subscribe(subscribeTopic.c_str())) {
 
       Serial.println("MQTT SUBSCRIBED");
 
@@ -1105,9 +1037,7 @@ void connectMQTT() {
 
 void publishTelemetry() {
 
-  if (!mqtt.connected() ||
-      !waterReceived ||
-      !moistureReceived)
+  if (!mqtt.connected() || !waterReceived || !moistureReceived)
     return;
 
   String risk = getRisk();
@@ -1132,10 +1062,7 @@ void publishTelemetry() {
     "&field4=" + String(nodeAOnline() ? 1 : 0) +
     "&field5=" + String(nodeBOnline() ? 1 : 0);
 
-  bool sent = mqtt.publish(
-    publishTopic.c_str(),
-    payload.c_str()
-  );
+  bool sent = mqtt.publish(publishTopic.c_str(), payload.c_str());
 
   Serial.print("ThingSpeak Channel 1: ");
   Serial.println(sent ? "Sent" : "Failed");
@@ -1155,31 +1082,23 @@ void publishPumpFeedback() {
   unsigned long now = millis();
 
   // Respect interval between gateway writes.
-  if (feedbackEverSent &&
-      now - lastFeedback < FEEDBACK_INTERVAL)
+  if (feedbackEverSent && now - lastFeedback < FEEDBACK_INTERVAL)
     return;
 
   // Allow time after a remote command update.
-  if (controlUpdateSeen &&
-      now - lastControlUpdate < COMMAND_SETTLE_MS)
+  if (controlUpdateSeen && now - lastControlUpdate < COMMAND_SETTLE_MS)
     return;
 
   // Publish on change or periodic state heartbeat.
-  if (!feedbackPending &&
-      feedbackEverSent &&
-      now - lastFeedback < 60000)
+  if (!feedbackPending && feedbackEverSent && now - lastFeedback < 60000)
     return;
 
   // Do not publish an unknown state as OFF.
   int state = pumpKnown ? (pumpOn ? 1 : 0) : -1;
 
-  String payload =
-    "field2=" + String(executionResult) +
-    "&field3=" + String(state);
+  String payload = "field2=" + String(executionResult) + "&field3=" + String(state);
 
-  bool sent = mqtt.publish(
-    feedbackTopic.c_str(),
-    payload.c_str()
+  bool sent = mqtt.publish(feedbackTopic.c_str(), payload.c_str()
   );
 
   Serial.print("ThingSpeak Channel 2: ");
@@ -1214,59 +1133,25 @@ void setup() {
   Serial.print("Gateway AP IP: ");
   Serial.println(WiFi.softAPIP());
 
-  server.on("/", HTTP_GET, []() {
-    server.send_P(
-      200,
-      "text/html",
-      DASHBOARD
-    );
-  });
+  server.on("/", HTTP_GET, []() {server.send_P(200, "text/html", DASHBOARD);});
 
-  server.on(
-    "/api/status",
-    HTTP_GET,
-    getStatus
-  );
+  server.on("/api/status", HTTP_GET, getStatus);
 
-  server.on(
-    "/api/sensors/water",
-    HTTP_POST,
-    receiveWater
-  );
+  server.on("/api/sensors/water", HTTP_POST, receiveWater);
 
-  server.on(
-    "/api/sensors/moisture",
-    HTTP_POST,
-    receiveMoisture
-  );
+  server.on("/api/sensors/moisture", HTTP_POST, receiveMoisture);
 
-  server.on(
-    "/api/pump/control",
-    HTTP_POST,
-    handleLocalControl
-  );
+  server.on("/api/pump/control", HTTP_POST, handleLocalControl);
 
   server.begin();
 
-  publishTopic =
-    "channels/" +
-    String(CHANNEL_ID) +
-    "/publish";
+  publishTopic = "channels/" + String(CHANNEL_ID) + "/publish";
 
-  subscribeTopic =
-    "channels/" +
-    String(CONTROL_CHANNEL_ID) +
-    "/subscribe/fields/field1";
+  subscribeTopic = "channels/" + String(CONTROL_CHANNEL_ID) + "/subscribe/fields/field1";
 
-  feedbackTopic =
-    "channels/" +
-    String(CONTROL_CHANNEL_ID) +
-    "/publish";
+  feedbackTopic = "channels/" + String(CONTROL_CHANNEL_ID) + "/publish";
 
-  mqtt.setServer(
-    MQTT_HOST,
-    MQTT_PORT
-  );
+  mqtt.setServer(MQTT_HOST, MQTT_PORT);
 
   mqtt.setCallback(mqttCallback);
   mqtt.setSocketTimeout(2);
@@ -1285,17 +1170,14 @@ void loop() {
   server.handleClient();
 
   // Internet Wi-Fi reconnection
-  if (WiFi.status() != WL_CONNECTED &&
-      millis() - lastWiFiRetry >= 10000) {
+  if (WiFi.status() != WL_CONNECTED && millis() - lastWiFiRetry >= 10000) {
 
     lastWiFiRetry = millis();
     WiFi.reconnect();
   }
 
   // MQTT reconnection
-  if (WiFi.status() == WL_CONNECTED &&
-      !mqtt.connected() &&
-      millis() - lastMQTTRetry >= 5000) {
+  if (WiFi.status() == WL_CONNECTED && !mqtt.connected() && millis() - lastMQTTRetry >= 5000) {
 
     lastMQTTRetry = millis();
     connectMQTT();
@@ -1344,8 +1226,7 @@ void loop() {
   automaticControl();
 
   // Monitoring Channel 1
-  if (mqtt.connected() &&
-      millis() - lastPublish >= MQTT_INTERVAL) {
+  if (mqtt.connected() && millis() - lastPublish >= MQTT_INTERVAL) {
 
     lastPublish = millis();
     publishTelemetry();
